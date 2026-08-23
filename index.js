@@ -21,7 +21,9 @@ const client = new MongoClient(uri, {
   },
 });
 
+// Collection declerartion
 let myStartupCollection;
+let addOpportunityCollection
 
 // Connect to MongoDB
 async function run() {
@@ -30,7 +32,12 @@ async function run() {
 
     const db = client.db("startupforge");
 
+    // Collections
     myStartupCollection = db.collection("mystartup");
+    addOpportunityCollection = db.collection("addOpportunity")
+
+
+
 
     await client.db("admin").command({ ping: 1 });
 
@@ -60,6 +67,51 @@ app.post("/mystartup", async (req, res) => {
     });
   }
 });
+
+app.get("/mystartup", async (req, res) => {
+  try {
+    const result = await myStartupCollection.find().toArray();
+    res.send(result)
+  } catch (error) {
+    console.error("Get startup error:", error);
+
+    res.status(500).json({
+      message: "Failed to get startup",
+      error: error.message,
+    });
+  }
+})
+
+app.post("/opportunity", async (req, res) => {
+  try {
+
+    const data = req.body;
+    const result = await addOpportunityCollection.insertOne(data);
+    res.status(201).json(result);
+
+  } catch (error) {
+    console.error("Create Opportunity error:", error);
+
+    res.status(500).json({
+      message: "Failed to Create Opportunity",
+      error: error.message,
+    });
+  }
+})
+
+app.get("/opportunity", async (req, res) => {
+  try {
+    const result = await addOpportunityCollection.find().toArray();
+    res.send(result)
+  } catch (error) {
+    console.error("Get opportunity error:", error);
+
+    res.status(500).json({
+      message: "Failed to get opportunity",
+      error: error.message,
+    });
+  }
+})
 
 // Test route
 app.get("/", (req, res) => {
