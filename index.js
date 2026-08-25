@@ -29,7 +29,8 @@ const client = new MongoClient(uri, {
 // Collection declerartion
 let myStartupCollection;
 let addOpportunityCollection;
-let applicationCollection
+let applicationCollection;
+let userCollection;
 
 // Connect to MongoDB
 async function run() {
@@ -42,6 +43,7 @@ async function run() {
     myStartupCollection = db.collection("mystartup");
     addOpportunityCollection = db.collection("addOpportunity")
     applicationCollection = db.collection("application")
+    userCollection = db.collection("user")
 
 
 
@@ -123,9 +125,9 @@ app.get("/opportunity", async (req, res) => {
 app.get("/opportunity/:id", async (req, res) => {
   try {
 
-    const {id} = req.params;
+    const { id } = req.params;
 
-    const result = await addOpportunityCollection.findOne({_id: new ObjectId(id)})
+    const result = await addOpportunityCollection.findOne({ _id: new ObjectId(id) })
     res.send(result)
   } catch (error) {
     console.error("Get opportunity error:", error);
@@ -156,6 +158,59 @@ app.post("/application", async (req, res) => {
     });
   }
 });
+
+app.get("/application", async (req, res) => {
+  try {
+    const result = await applicationCollection.find().toArray();
+    res.send(result)
+  } catch (error) {
+    console.error("Get application error:", error);
+
+    res.status(500).json({
+      message: "Failed to get applications",
+      error: error.message,
+    });
+  }
+})
+
+app.get("/profile/:id", async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const result = await userCollection.findOne({ _id: new ObjectId(id) })
+    res.send(result)
+  } catch (error) {
+    console.error("Get profile error:", error);
+
+    res.status(500).json({
+      message: "Failed to get profile",
+      error: error.message,
+    });
+  }
+})
+
+app.patch("/profile/:id", async (req, res) => {
+
+  try {
+    const { id } = req.params;
+    const UpdatedData = req.body;
+
+    const result = await userCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: UpdatedData }
+    )
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("update profile error:", error);
+
+    res.status(500).json({
+      message: "Failed to Update profile",
+      error: error.message,
+    });
+  }
+
+})
 
 
 
