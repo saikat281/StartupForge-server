@@ -1,6 +1,6 @@
 const express = require("express");
 const dotenv = require("dotenv");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
 dotenv.config();
 
@@ -112,6 +112,24 @@ app.get("/opportunity", async (req, res) => {
     });
   }
 })
+
+app.get("/opportunity/:id", async (req, res) => {
+  try {
+
+    const {id} = req.params;
+
+    const result = await addOpportunityCollection.findOne({_id: new ObjectId(id)})
+    res.send(result)
+  } catch (error) {
+    console.error("Get opportunity error:", error);
+
+    res.status(500).json({
+      message: "Failed to get opportunity",
+      error: error.message,
+    });
+  }
+})
+
 
 // Test route
 app.get("/", (req, res) => {
