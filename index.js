@@ -23,7 +23,8 @@ const client = new MongoClient(uri, {
 
 // Collection declerartion
 let myStartupCollection;
-let addOpportunityCollection
+let addOpportunityCollection;
+let applicationCollection
 
 // Connect to MongoDB
 async function run() {
@@ -35,6 +36,7 @@ async function run() {
     // Collections
     myStartupCollection = db.collection("mystartup");
     addOpportunityCollection = db.collection("addOpportunity")
+    applicationCollection = db.collection("application")
 
 
 
@@ -129,6 +131,28 @@ app.get("/opportunity/:id", async (req, res) => {
     });
   }
 })
+
+
+app.post("/application", async (req, res) => {
+  try {
+    const data = req.body;
+
+    console.log("Received data:", data);
+
+    const result = await applicationCollection.insertOne(data);
+
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("Create application error:", error);
+
+    res.status(500).json({
+      message: "Failed to create application",
+      error: error.message,
+    });
+  }
+});
+
+
 
 
 // Test route
