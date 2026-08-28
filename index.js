@@ -91,6 +91,62 @@ app.get("/mystartup", async (req, res) => {
   }
 })
 
+app.get("/mystartup/:id", async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const result = await myStartupCollection.findOne({ _id: new ObjectId(id) })
+    res.send(result)
+  } catch (error) {
+    console.error("Get startup error:", error);
+
+    res.status(500).json({
+      message: "Failed to get startup",
+      error: error.message,
+    });
+  }
+})
+
+app.delete("/mystartup/:id", async (req, res) => {
+  try {
+
+    const { id } = req.params;
+
+    const result = await myStartupCollection.deleteOne({ _id: new ObjectId(id) })
+    res.send(result)
+  } catch (error) {
+    console.error("Delete startup error:", error);
+
+    res.status(500).json({
+      message: "Failed to Delete startup",
+      error: error.message,
+    });
+  }
+})
+
+app.patch("/mystartup/:id", async (req, res) => {
+
+  try {
+    const { id } = req.params;
+    const UpdatedData = req.body;
+
+    const result = await myStartupCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: UpdatedData }
+    )
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("update Status error:", error);
+
+    res.status(500).json({
+      message: "Failed to Update status",
+      error: error.message,
+    });
+  }
+
+})
+
 app.post("/opportunity", async (req, res) => {
   try {
 
@@ -139,6 +195,25 @@ app.get("/opportunity/:id", async (req, res) => {
   }
 })
 
+app.delete("/opportunity/:userId", async (req, res) => {
+  try {
+
+    const { userId } = req.params;
+
+    const result = await addOpportunityCollection.deleteMany({ userId: userId })
+    res.send(result)
+  } catch (error) {
+    console.error("Delete opportunities error:", error);
+
+    res.status(500).json({
+      message: "Failed to Delete opportunities",
+      error: error.message,
+    });
+  }
+})
+
+
+
 
 app.post("/application", async (req, res) => {
   try {
@@ -171,6 +246,28 @@ app.get("/application", async (req, res) => {
       error: error.message,
     });
   }
+})
+
+app.patch("/application/:id", async (req, res) => {
+
+  try {
+    const { id } = req.params;
+    const UpdatedData = req.body;
+
+    const result = await applicationCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: UpdatedData }
+    )
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("update application error:", error);
+
+    res.status(500).json({
+      message: "Failed to Update application",
+      error: error.message,
+    });
+  }
+
 })
 
 app.get("/profile/:id", async (req, res) => {
