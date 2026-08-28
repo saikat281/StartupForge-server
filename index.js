@@ -270,6 +270,42 @@ app.patch("/application/:id", async (req, res) => {
 
 })
 
+app.get("/users", async (req, res) => {
+  try {
+    const result = await userCollection.find().toArray();
+    res.send(result)
+  } catch (error) {
+    console.error("Get users error:", error);
+
+    res.status(500).json({
+      message: "Failed to get users",
+      error: error.message,
+    });
+  }
+})
+
+app.patch("/users/:id", async (req, res) => {
+
+  try {
+    const { id } = req.params;
+    const UpdatedData = req.body;
+
+    const result = await userCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: UpdatedData }
+    )
+    res.status(201).json(result);
+  } catch (error) {
+    console.error("update userStatus error:", error);
+
+    res.status(500).json({
+      message: "Failed to Update userStatus",
+      error: error.message,
+    });
+  }
+
+})
+
 app.get("/profile/:id", async (req, res) => {
   try {
 
