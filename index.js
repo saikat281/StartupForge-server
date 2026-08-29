@@ -61,20 +61,43 @@ async function run() {
 
 // API
 
-app.post("/payment",async(req,res)=>{
-  const {user,session_id} = req.body;
+app.post("/payment", async (req, res) => {
+  const { user, session_id, Current_date } = req.body;
 
-  const payment_result = await proPlanCollection.insertOne({userId : new ObjectId(user.id),session_id})
+  const isExistSession = await proPlanCollection.findOne({ session_id });
+
+  if (isExistSession) {
+    return res.status(201).json("Session already exist");
+  }
+
+
+  const payment_result = await proPlanCollection.insertOne({ user: user.name, amount: 14, Date: Current_date, payment_status: "completed", userId: user.id, session_id })
 
   // Update User_status
 
   const user_result = await userCollection.updateOne(
-    {_id : new ObjectId(user.id)},
-    {$set : {plan : "pro"}},
+    { _id: new ObjectId(user.id) },
+    { $set: { plan: "pro" } },
   )
 
-  res.status(201).json({payment_result,user_result});
+  res.status(201).json({ payment_result, user_result });
 })
+
+app.get("/payment", async (req, res) => {
+  try {
+    const result = await proPlanCollection.find().toArray();
+    res.send(result)
+  } catch (error) {
+    console.error("Get proPlan error:", error);
+
+    res.status(500).json({
+      message: "Failed to get proPlan",
+      error: error.message,
+    });
+  }
+})
+
+
 
 
 app.post("/mystartup", async (req, res) => {
