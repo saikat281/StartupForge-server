@@ -31,6 +31,7 @@ let myStartupCollection;
 let addOpportunityCollection;
 let applicationCollection;
 let userCollection;
+let proPlanCollection
 
 // Connect to MongoDB
 async function run() {
@@ -44,6 +45,7 @@ async function run() {
     addOpportunityCollection = db.collection("addOpportunity")
     applicationCollection = db.collection("application")
     userCollection = db.collection("user")
+    proPlanCollection = db.collection("proPlan")
 
 
 
@@ -58,6 +60,23 @@ async function run() {
 }
 
 // API
+
+app.post("/payment",async(req,res)=>{
+  const {user,session_id} = req.body;
+
+  const payment_result = await proPlanCollection.insertOne({userId : new ObjectId(user.id),session_id})
+
+  // Update User_status
+
+  const user_result = await userCollection.updateOne(
+    {_id : new ObjectId(user.id)},
+    {$set : {plan : "pro"}},
+  )
+
+  res.status(201).json({payment_result,user_result});
+})
+
+
 app.post("/mystartup", async (req, res) => {
   try {
     const data = req.body;
