@@ -150,6 +150,26 @@ app.get("/mystartup/:id", async (req, res) => {
   }
 })
 
+
+// To Get All opportunities under specific Startup 
+app.get("/startups/:sid", async (req, res) => {
+  try {
+
+    const { sid } = req.params;
+
+    const result = await addOpportunityCollection.find({ startupId: sid }).toArray();
+    res.send(result)
+  } catch (error) {
+    console.error("Get opportunities error:", error);
+
+    res.status(500).json({
+      message: "Failed to get opportunities",
+      error: error.message,
+    });
+  }
+})
+
+
 app.delete("/mystartup/:id", async (req, res) => {
   try {
 
