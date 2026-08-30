@@ -229,6 +229,14 @@ app.post("/opportunity", async (req, res) => {
 app.get("/opportunity", async (req, res) => {
   try {
 
+    const searchText = req.query.search || "";
+    let query = {};
+
+    query.$or = [
+      { roleTitle: { $regex: searchText, $options: "i" } },
+      { skills: { $regex: searchText, $options: "i" } },
+    ]
+
     const limit = Number(req.query.limit) || 10;
     const current_page = Number(req.query.page) || 1;
 
@@ -237,8 +245,8 @@ app.get("/opportunity", async (req, res) => {
     const total_page = Math.ceil(totalData / limit);
     const skip = (current_page - 1) * limit;
 
-    const result = await addOpportunityCollection.find().skip(skip).limit(limit).toArray();
-    res.send({ total_page, skip,totalData, result })
+    const result = await addOpportunityCollection.find(query).skip(skip).limit(limit).toArray();
+    res.send({ total_page, skip, totalData, result })
   } catch (error) {
     console.error("Get opportunity error:", error);
 
