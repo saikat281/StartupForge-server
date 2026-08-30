@@ -228,8 +228,17 @@ app.post("/opportunity", async (req, res) => {
 
 app.get("/opportunity", async (req, res) => {
   try {
-    const result = await addOpportunityCollection.find().toArray();
-    res.send(result)
+
+    const limit = Number(req.query.limit) || 10;
+    const current_page = Number(req.query.page) || 1;
+
+    const totalData = await addOpportunityCollection.countDocuments();
+
+    const total_page = Math.ceil(totalData / limit);
+    const skip = (current_page - 1) * limit;
+
+    const result = await addOpportunityCollection.find().skip(skip).limit(limit).toArray();
+    res.send({ total_page, skip,totalData, result })
   } catch (error) {
     console.error("Get opportunity error:", error);
 
