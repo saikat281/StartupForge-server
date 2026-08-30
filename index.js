@@ -230,12 +230,17 @@ app.get("/opportunity", async (req, res) => {
   try {
 
     const searchText = req.query.search || "";
+    const workType = req.query.workType || "";
     let query = {};
 
     query.$or = [
       { roleTitle: { $regex: searchText, $options: "i" } },
       { skills: { $regex: searchText, $options: "i" } },
+
     ]
+
+   
+    if (workType) query.workType =  workType ; 
 
     const limit = Number(req.query.limit) || 10;
     const current_page = Number(req.query.page) || 1;
@@ -246,7 +251,7 @@ app.get("/opportunity", async (req, res) => {
     const skip = (current_page - 1) * limit;
 
     const result = await addOpportunityCollection.find(query).skip(skip).limit(limit).toArray();
-    res.send({ total_page, skip, totalData, result })
+    res.send({ total_page, skip, totalData, result,workType})
   } catch (error) {
     console.error("Get opportunity error:", error);
 
