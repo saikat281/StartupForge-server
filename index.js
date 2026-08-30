@@ -1,7 +1,8 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const cors = require("cors")
+const cors = require("cors");
+const { createRemoteJWKSet, jwtVerify } = require("jose-cjs");
 
 dotenv.config();
 
@@ -59,9 +60,34 @@ async function run() {
   }
 }
 
+
+const JWKS = createRemoteJWKSet(new URL(`${process.env.CLIENT_URL}/api/auth/jwks`))
+
+const verifyToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+     return res.status(401).send({ msg: "Unauthorized" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+     return res.status(401).send({ msg: "Unauthorized" });
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, JWKS)
+    console.log(payload)
+    next();
+  } catch (error) {
+     return res.status(401).send({ msg: "Unauthorized" });
+  }
+
+  // console.log(AuthHeader);
+
+}
+
 // API
 
-app.post("/payment", async (req, res) => {
+app.post("/payment", verifyToken, async (req, res) => {
   const { user, session_id, Current_date } = req.body;
 
   const isExistSession = await proPlanCollection.findOne({ session_id });
@@ -83,7 +109,7 @@ app.post("/payment", async (req, res) => {
   res.status(201).json({ payment_result, user_result });
 })
 
-app.get("/payment", async (req, res) => {
+app.get("/payment", verifyToken, async (req, res) => {
   try {
     const result = await proPlanCollection.find().toArray();
     res.send(result)
@@ -100,7 +126,7 @@ app.get("/payment", async (req, res) => {
 
 
 
-app.post("/mystartup", async (req, res) => {
+app.post("/mystartup",  async (req, res) => {
   try {
     const data = req.body;
 
@@ -133,7 +159,7 @@ app.get("/mystartup", async (req, res) => {
   }
 })
 
-app.get("/mystartup/:id", async (req, res) => {
+app.get("/mystartup/:id",  async (req, res) => {
   try {
 
     const { id } = req.params;
@@ -170,7 +196,7 @@ app.get("/startups/:sid", async (req, res) => {
 })
 
 
-app.delete("/mystartup/:id", async (req, res) => {
+app.delete("/mystartup/:id", verifyToken, async (req, res) => {
   try {
 
     const { id } = req.params;
@@ -187,7 +213,7 @@ app.delete("/mystartup/:id", async (req, res) => {
   }
 })
 
-app.patch("/mystartup/:id", async (req, res) => {
+app.patch("/mystartup/:id", verifyToken, async (req, res) => {
 
   try {
     const { id } = req.params;
@@ -209,11 +235,12 @@ app.patch("/mystartup/:id", async (req, res) => {
 
 })
 
-app.post("/opportunity", async (req, res) => {
+app.post("/opportunity", verifyToken, async (req, res) => {  //verifyToken
   try {
 
     const data = req.body;
     const result = await addOpportunityCollection.insertOne(data);
+
     res.status(201).json(result);
 
   } catch (error) {
@@ -239,8 +266,8 @@ app.get("/opportunity", async (req, res) => {
 
     ]
 
-   
-    if (workType) query.workType =  workType ; 
+
+    if (workType) query.workType = workType;
 
     const limit = Number(req.query.limit) || 10;
     const current_page = Number(req.query.page) || 1;
@@ -251,7 +278,7 @@ app.get("/opportunity", async (req, res) => {
     const skip = (current_page - 1) * limit;
 
     const result = await addOpportunityCollection.find(query).skip(skip).limit(limit).toArray();
-    res.send({ total_page, skip, totalData, result,workType})
+    res.send({ total_page, skip, totalData, result, workType })
   } catch (error) {
     console.error("Get opportunity error:", error);
 
@@ -262,7 +289,7 @@ app.get("/opportunity", async (req, res) => {
   }
 })
 
-app.get("/opportunity/:id", async (req, res) => {
+app.get("/opportunity/:id", verifyToken, async (req, res) => {
   try {
 
     const { id } = req.params;
@@ -279,7 +306,7 @@ app.get("/opportunity/:id", async (req, res) => {
   }
 })
 
-app.delete("/opportunity/:userId", async (req, res) => {
+app.delete("/opportunity/:userId",  async (req, res) => {
   try {
 
     const { userId } = req.params;
@@ -299,7 +326,7 @@ app.delete("/opportunity/:userId", async (req, res) => {
 
 
 
-app.post("/application", async (req, res) => {
+app.post("/application", verifyToken,  async (req, res) => {
   try {
     const data = req.body;
 
@@ -318,7 +345,7 @@ app.post("/application", async (req, res) => {
   }
 });
 
-app.get("/application", async (req, res) => {
+app.get("/application", verifyToken,  async (req, res) => {
   try {
     const result = await applicationCollection.find().toArray();
     res.send(result)
@@ -354,7 +381,7 @@ app.patch("/application/:id", async (req, res) => {
 
 })
 
-app.get("/users", async (req, res) => {
+app.get("/users", verifyToken,  async (req, res) => {
   try {
     const result = await userCollection.find().toArray();
     res.send(result)
@@ -368,7 +395,7 @@ app.get("/users", async (req, res) => {
   }
 })
 
-app.patch("/users/:id", async (req, res) => {
+app.patch("/users/:id", verifyToken, async (req, res) => {
 
   try {
     const { id } = req.params;
@@ -390,7 +417,7 @@ app.patch("/users/:id", async (req, res) => {
 
 })
 
-app.get("/profile/:id", async (req, res) => {
+app.get("/profile/:id", verifyToken,  async (req, res) => {
   try {
 
     const { id } = req.params;
@@ -407,7 +434,7 @@ app.get("/profile/:id", async (req, res) => {
   }
 })
 
-app.patch("/profile/:id", async (req, res) => {
+app.patch("/profile/:id", verifyToken,  async (req, res) => {
 
   try {
     const { id } = req.params;
