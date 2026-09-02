@@ -465,6 +465,7 @@ app.patch("/opportunity/:id", async (req, res) => {
   }
 });
 
+// delete all opportunity
 app.delete("/opportunity/:userId", async (req, res) => {
   try {
     await dbReady;
@@ -485,6 +486,39 @@ app.delete("/opportunity/:userId", async (req, res) => {
     });
   }
 });
+
+
+// delete specific opportunity
+app.delete("/opportunities/opportunity/:id", async (req, res) => {
+  try {
+    await dbReady;
+
+    const { id } = req.params;
+
+    const result = await addOpportunityCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({
+        message: "Opportunity not found",
+      });
+    }
+
+    res.json({
+      message: "Opportunity deleted successfully",
+      result,
+    });
+  } catch (error) {
+    console.error("Delete opportunity error:", error);
+
+    res.status(500).json({
+      message: "Failed to delete opportunity",
+      error: error.message,
+    });
+  }
+});
+
 
 app.get("/startups/:sid", async (req, res) => {
   try {
